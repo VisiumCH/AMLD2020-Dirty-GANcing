@@ -29,7 +29,7 @@ def prepare_source(save_dir):
 
     video_files = [f for f in os.listdir(save_dir) if f.endswith('.mp4')]
     assert (not len(video_files) < 1), "No mp4 file found!"
-    assert (not len(video_files) >1 ), "More than one video file found, make sure to have only one!"
+    assert (not len(video_files) > 1), "More than one video file found, make sure to have only one!"
 
     video_file = os.path.join(save_dir, video_files[0])
 
@@ -48,12 +48,13 @@ def extract_frames(video_file, img_dir, max_frames=1000):
     i = 0
     while cap.isOpened():
         flag, frame = cap.read()
-        if flag == False or i >= max_frames:
+        if flag is False or i >= max_frames:
             break
         cv2.imwrite(os.path.join(img_dir, '{:05}.png'.format(i)), frame)
-        if i%100 == 0:
+        if i % 100 == 0:
             print(f"{i} frames extracted")
         i += 1
+
 
 def load_openpose_model(weights='./src/PoseEstimation/network/weight/pose_model.pth',
                         model_type='vgg19'):
@@ -65,6 +66,7 @@ def load_openpose_model(weights='./src/PoseEstimation/network/weight/pose_model.
     model.eval()
 
     return model
+
 
 def extract_poses(model, save_dir):
     '''make label images for pix2pix'''
@@ -81,7 +83,7 @@ def extract_poses(model, save_dir):
     for idx in tqdm(range(len(os.listdir(img_dir)))):
         img_path = os.path.join(img_dir, '{:05}.png'.format(idx))
         img = cv2.imread(img_path)
-        
+
         shape_dst = np.min(img.shape[:2])
         oh = (img.shape[0] - shape_dst) // 2
         ow = (img.shape[1] - shape_dst) // 2
@@ -92,7 +94,7 @@ def extract_poses(model, save_dir):
         with torch.no_grad():
             paf, heatmap = get_outputs(multiplier, img, model, 'rtpose')
         r_heatmap = np.array([remove_noise(ht)
-                            for ht in heatmap.transpose(2, 0, 1)[:-1]]) \
+                              for ht in heatmap.transpose(2, 0, 1)[:-1]]) \
             .transpose(1, 2, 0)
         heatmap[:, :, :-1] = r_heatmap
         param = {'thre1': 0.1, 'thre2': 0.05, 'thre3': 0.5}
@@ -106,7 +108,7 @@ def extract_poses(model, save_dir):
 
         pose_cords.append(head_cord)
         head = img[int(head_cord[1] - crop_size): int(head_cord[1] + crop_size),
-            int(head_cord[0] - crop_size): int(head_cord[0] + crop_size), :]
+                   int(head_cord[0] - crop_size): int(head_cord[0] + crop_size), :]
         plt.imshow(head)
         plt.savefig(os.path.join(test_head_dir, 'pose_{}.jpg'.format(idx)))
         plt.clf()
@@ -123,7 +125,8 @@ def extract_poses(model, save_dir):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Prepare Source Video')
-    parser.add_argument('-s', '--save-dir', type=str, default=os.path.join(dir_name, '../../data/source/bruno_mars'),
+    parser.add_argument('-s', '--save-dir', type=str,
+                        default=os.path.join(dir_name, '../../data/source/bruno_mars'),
                         help='Path to the folder where the video is saved. One video per folder!')
     args = parser.parse_args()
     prepare_source(args.save_dir)

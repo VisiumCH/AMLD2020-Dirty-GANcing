@@ -28,7 +28,7 @@ torch.backends.cudnn.benchmark = True
 
 def train_pose2vid(target_dir, run_name):
     import src.config.train_opt as opt
-    
+
     opt = update_opt(opt, target_dir, run_name)
 
     iter_path = os.path.join(opt.checkpoints_dir, opt.name, 'iter.json')
@@ -100,7 +100,7 @@ def train_pose2vid(target_dir, run_name):
             ### print out errors
             if total_steps % opt.print_freq == print_delta:
                 errors = {k: v.item() if not isinstance(v, int) else v for k, v in loss_dict.items()}
-                #errors = {k: v.data[0] if not isinstance(v, int) else v for k, v in loss_dict.items()}
+                # errors = {k: v.data[0] if not isinstance(v, int) else v for k, v in loss_dict.items()}
                 t = (time.time() - iter_start_time) / opt.batchSize
                 visualizer.print_current_errors(epoch, epoch_iter, errors, t)
                 visualizer.plot_current_errors(errors, total_steps)
@@ -148,6 +148,7 @@ def train_pose2vid(target_dir, run_name):
 
     torch.cuda.empty_cache()
 
+
 def update_opt(opt, target_dir, run_name):
     opt.dataroot = os.path.join(target_dir, 'train')
     opt.name = run_name
@@ -157,11 +158,14 @@ def update_opt(opt, target_dir, run_name):
 
     return opt
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Prepare target Video')
-    parser.add_argument('-t', '--target-dir', type=str, default=os.path.join(dir_name, '../../data/targets/example_target'),
+    parser.add_argument('-t', '--target-dir', type=str,
+                        default=os.path.join(dir_name, '../../data/targets/example_target'),
                         help='Path to the folder where the target video is saved. One video per folder!')
-    parser.add_argument('-r', '--run-name', type=str, default='bruno_mars_example',
+    parser.add_argument('-r', '--run-name', type=str,
+                        default='bruno_mars_example',
                         help='Name of the current run')
     args = parser.parse_args()
     train_pose2vid(args.target_dir, args.run_name)

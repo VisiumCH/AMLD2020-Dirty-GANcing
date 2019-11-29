@@ -50,19 +50,23 @@ def make_gif(source_dir, results_dir):
         ax3.set_xticks([])
         ax3.set_yticks([])
 
-    anim = ani.FuncAnimation(fig, animate, frames=len(target_label_paths), interval=1000 / 24)
+    anim = ani.FuncAnimation(fig, animate, frames=len(target_label_paths),
+                             interval=1000 / 24)
     plt.close()
 
-    #js_anim = HTML(anim.to_jshtml())
-    
-    anim.save(os.path.join(results_dir, "test_latest/output.gif"), writer="imagemagick")
+    # js_anim = HTML(anim.to_jshtml())
+
+    anim.save(os.path.join(results_dir, "test_latest/output.gif"),
+              writer="imagemagick")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Prepare target Video')
-    parser.add_argument('-s', '--source-dir', type=str, default=os.path.join(dir_name, '../../data/sources/bruno_mars'),
+    parser.add_argument('-s', '--source-dir', type=str,
+                        default=os.path.join(dir_name, '../../data/sources/bruno_mars'),
                         help='Path to the folder where the source video is saved. One video per folder!')
-    parser.add_argument('-r', '--results-dir', type=str, default=os.path.join(dir_name, '../../results/example_bruno_mars'),
+    parser.add_argument('-r', '--results-dir', type=str,
+                        default=os.path.join(dir_name, '../../results/example_bruno_mars'),
                         help='Path to the folder where the results of transfer.py are saved')
     args = parser.parse_args()
     make_gif(args.source_dir, args.results_dir)

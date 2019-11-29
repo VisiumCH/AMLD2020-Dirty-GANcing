@@ -13,7 +13,7 @@ from tqdm import tqdm
 dir_name = os.path.dirname(__file__)
 warnings.filterwarnings('ignore')
 
-sys.path.append(os.path.join(dir_name, '../PoseEstimation/')) 
+sys.path.append(os.path.join(dir_name, '../PoseEstimation/'))
 sys.path.append(os.path.join(dir_name, '../utils'))
 from prepare_source import extract_frames, load_openpose_model
 # Import from openpose
@@ -26,6 +26,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 torch.multiprocessing.set_sharing_strategy('file_system')
 torch.backends.cudnn.benchmark = True
 torch.cuda.set_device(0)
+
 
 def prepare_target(save_dir):
 
@@ -57,7 +58,7 @@ def extract_poses(model, save_dir):
     os.makedirs(train_label_dir, exist_ok=True)
     train_head_dir = os.path.join(train_dir, 'head_img')
     os.makedirs(train_head_dir, exist_ok=True)
-    
+
     img_dir = os.path.join(save_dir, 'images')
 
     pose_cords = []
@@ -75,10 +76,9 @@ def extract_poses(model, save_dir):
         with torch.no_grad():
             paf, heatmap = get_outputs(multiplier, img, model, 'rtpose')
         r_heatmap = np.array([remove_noise(ht)
-                            for ht in heatmap.transpose(2, 0, 1)[:-1]]).transpose(1, 2, 0)
+                              for ht in heatmap.transpose(2, 0, 1)[:-1]]).transpose(1, 2, 0)
         heatmap[:, :, :-1] = r_heatmap
         param = {'thre1': 0.1, 'thre2': 0.05, 'thre3': 0.5}
-        #TODO get_pose
         label, cord = get_pose(param, heatmap, paf)
         index = 13
         crop_size = 25
@@ -89,7 +89,7 @@ def extract_poses(model, save_dir):
 
         pose_cords.append(head_cord)
         head = img[int(head_cord[1] - crop_size): int(head_cord[1] + crop_size),
-            int(head_cord[0] - crop_size): int(head_cord[0] + crop_size), :]
+                   int(head_cord[0] - crop_size): int(head_cord[0] + crop_size), :]
         plt.imshow(head)
         plt.savefig(os.path.join(train_head_dir, 'pose_{}.jpg'.format(idx)))
         plt.clf()
@@ -100,9 +100,11 @@ def extract_poses(model, save_dir):
     np.save(os.path.join(save_dir, 'pose_source.npy'), pose_cords_arr)
     torch.cuda.empty_cache()
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Prepare target Video')
-    parser.add_argument('-s', '--save-dir', type=str, default=os.path.join(dir_name, '../../data/targets/example_target'),
+    parser.add_argument('-s', '--save-dir', type=str,
+                        default=os.path.join(dir_name, '../../data/targets/example_target'),
                         help='Path to the folder where the video is saved. One video per folder!')
     args = parser.parse_args()
-    prepare_target(args.save_dir)    
+    prepare_target(args.save_dir)

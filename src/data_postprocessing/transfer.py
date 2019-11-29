@@ -18,8 +18,6 @@ from util import html
 from util.visualizer import Visualizer
 
 
-
-
 def test_transfer(source_dir, run_name):
     import src.config.test_opt as opt
 
@@ -41,17 +39,20 @@ def test_transfer(source_dir, run_name):
         generated = model.inference(data['label'], data['inst'])
 
         visuals = OrderedDict([('input_label', util.tensor2label(data['label'][0], opt.label_nc)),
-                            ('synthesized_image', util.tensor2im(generated.data[0]))])
+                               ('synthesized_image', util.tensor2im(generated.data[0]))])
         img_path = data['path']
         visualizer.save_images(webpage, visuals, img_path)
     webpage.save()
     torch.cuda.empty_cache()
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Test pose transfer')
-    parser.add_argument('-s', '--source-dir', type=str, default=os.path.join(dir_name, '../../data/sources/bruno_mars'),
+    parser.add_argument('-s', '--source-dir', type=str,
+                        default=os.path.join(dir_name, '../../data/sources/bruno_mars'),
                         help='Path to the folder where the target video is saved. One video per folder!')
-    parser.add_argument('-r', '--run-name', type=str, default='bruno_mars_example',
+    parser.add_argument('-r', '--run-name', type=str,
+                        default='bruno_mars_example',
                         help='Path to the folder where the target video is saved. One video per folder!')
     args = parser.parse_args()
     test_transfer(args.source_dir, args.run_name)
