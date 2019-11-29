@@ -1,2 +1,6 @@
 .vscode
 env/
+
+data/**.png
+data/**.jpg
+results/**.jpg
