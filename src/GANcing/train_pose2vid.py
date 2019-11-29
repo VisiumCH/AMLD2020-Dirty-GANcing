@@ -25,7 +25,7 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 torch.backends.cudnn.benchmark = True
 
 
-def train_pose2vid(target_dir, run_name, debug):
+def train_pose2vid(target_dir, run_name):
     import src.config.train_opt as opt
     
     opt = update_opt(opt, target_dir, run_name)
@@ -84,13 +84,13 @@ def train_pose2vid(target_dir, run_name, debug):
 
             ############## Display results and errors ##########
 
-            print(f"Epoch {epoch} batch{i}:")
+            print(f"Epoch {epoch} batch {i}:")
             print(f"loss_D: {loss_D}, loss_G: {loss_G}")
             print(f"loss_D_fake: {loss_dict['D_fake']}, loss_D_real: {loss_dict['D_real']}")
             print(f"loss_G_GAN {loss_dict['G_GAN']}, loss_G_GAN_Feat: {loss_dict.get('G_GAN_Feat', 0)}, loss_G_VGG: {loss_dict.get('G_VGG', 0)}\n")
 
             ### print out errors
-            if total_steps % opt.print_freq == print_delta and debug:
+            if total_steps % opt.print_freq == print_delta:
                 errors = {k: v.item() if not isinstance(v, int) else v for k, v in loss_dict.items()}
                 #errors = {k: v.data[0] if not isinstance(v, int) else v for k, v in loss_dict.items()}
                 t = (time.time() - iter_start_time) / opt.batchSize
@@ -98,7 +98,7 @@ def train_pose2vid(target_dir, run_name, debug):
                 visualizer.plot_current_errors(errors, total_steps)
 
             ### display output images
-            if save_fake and debug:
+            if save_fake:
                 visuals = OrderedDict([('input_label', util.tensor2label(data['label'][0], opt.label_nc)),
                                        ('synthesized_image', util.tensor2im(generated.data[0])),
                                        ('real_image', util.tensor2im(data['image'][0]))])
@@ -137,6 +137,9 @@ def train_pose2vid(target_dir, run_name, debug):
 def update_opt(opt, target_dir, run_name):
     opt.dataroot = os.path.join(target_dir, 'train')
     opt.name = run_name
+    if os.path.isdir(os.path.join(dir_name, "../../checkpoints", run_name)):
+        print("Run already exists, will try to resume training")
+        opt.load_pretrain = os.path.join(dir_name, "../../checkpoints", run_name)
 
     return opt
 
@@ -146,7 +149,5 @@ if __name__ == '__main__':
                         help='Path to the folder where the target video is saved. One video per folder!')
     parser.add_argument('-r', '--run-name', type=str, default='bruno_mars_example',
                         help='Name of the current run')
-    parser.add_argument('-d', '--debug', default=False, action='store_true',
-                        help='Debug mode')
     args = parser.parse_args()
-    train_pose2vid(args.target_dir, args.run_name, args.debug)
+    train_pose2vid(args.target_dir, args.run_name)
