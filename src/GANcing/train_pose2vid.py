@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import numpy as np
 import torch
@@ -30,13 +31,20 @@ def train_pose2vid(target_dir, run_name):
     
     opt = update_opt(opt, target_dir, run_name)
 
-    iter_path = os.path.join(opt.checkpoints_dir, opt.name, 'iter.txt')
+    iter_path = os.path.join(opt.checkpoints_dir, opt.name, 'iter.json')
     data_loader = CreateDataLoader(opt)
     dataset = data_loader.load_data()
     dataset_size = len(data_loader)
     print('#training images = %d' % dataset_size)
 
-    start_epoch, epoch_iter = 1, 0
+    if opt.load_pretrain != '':
+        with open(iter_path, 'r') as f:
+            iter_json = json.load(f)
+    else:
+        iter_json = {'start_epoch': 1, 'epoch_iter': 0}
+
+    start_epoch = iter_json['start_epoch']
+    epoch_iter = iter_json['epoch_iter']
     total_steps = (start_epoch - 1) * dataset_size + epoch_iter
     display_delta = total_steps % opt.display_freq
     print_delta = total_steps % opt.print_freq
@@ -108,7 +116,10 @@ def train_pose2vid(target_dir, run_name):
             if total_steps % opt.save_latest_freq == save_delta:
                 print('saving the latest model (epoch %d, total_steps %d)' % (epoch, total_steps))
                 model.save('latest')
-                np.savetxt(iter_path, (epoch, epoch_iter), delimiter=',', fmt='%d')
+                iter_json['start_epoch'] = epoch
+                iter_json['epoch_iter'] = epoch_iter
+                with open(iter_path, 'w') as f:
+                    json.dump(iter_json, f)
 
             if epoch_iter >= dataset_size:
                 break
@@ -122,7 +133,10 @@ def train_pose2vid(target_dir, run_name):
             print('saving the model at the end of epoch %d, iters %d' % (epoch, total_steps))
             model.save('latest')
             model.save(epoch)
-            np.savetxt(iter_path, (epoch + 1, 0), delimiter=',', fmt='%d')
+            iter_json['start_epoch'] = epoch + 1
+            iter_json['epoch_iter'] = 0
+            with open(iter_path, 'w') as f:
+                json.dump(iter_json, f)
 
         ### instead of only training the local enhancer, train the entire network after certain iterations
         if (opt.niter_fix_global != 0) and (epoch == opt.niter_fix_global):
