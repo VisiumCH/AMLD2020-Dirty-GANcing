@@ -32,7 +32,7 @@ def prepare_target(save_dir):
 
     video_files = [f for f in os.listdir(save_dir) if f.endswith('.mp4')]
     assert (not len(video_files) < 1), "No mp4 file found!"
-    assert (not len(video_files) >1 ), "More than one video file found, make sure to have only one!"
+    assert (not len(video_files) > 1), "More than one video file found, make sure to have only one!"
 
     video_file = os.path.join(save_dir, video_files[0])
 
@@ -84,8 +84,12 @@ def extract_poses(model, save_dir):
         crop_size = 25
         try:
             head_cord = cord[index]
-        except:
-            head_cord = pose_cords[-1] # if there is not head point in picture, use last frame
+        except IndexError:
+            try:
+                head_cord = pose_cords[-1]  # if there is not head point in picture, use last frame
+            except IndexError:
+                print("skipping 1st frame as pose detection failed")
+                continue
 
         pose_cords.append(head_cord)
         head = img[int(head_cord[1] - crop_size): int(head_cord[1] + crop_size),

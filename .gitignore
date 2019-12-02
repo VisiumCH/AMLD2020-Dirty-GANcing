@@ -1,6 +1,8 @@
 .vscode
 env/
 
+**.pyc
+
 data/**.png
 data/**.jpg
 results/**.jpg
