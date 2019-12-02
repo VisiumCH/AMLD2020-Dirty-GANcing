@@ -79,7 +79,7 @@ def normalize(source_dir, target_dir):
                    int(new_head_y - crop_size): int(new_head_y + crop_size), :]
         plt.imshow(head)
         plt.savefig(os.path.join(head_dir, 'pose_{}.jpg'.format(img_idx)))
-
+        plt.clf()
         cv2.imwrite(os.path.join(output, '{:05}.png'.format(img_idx)), new_source)
 
     pose_cords_arr = np.array(new_head_pose, dtype=np.int)
