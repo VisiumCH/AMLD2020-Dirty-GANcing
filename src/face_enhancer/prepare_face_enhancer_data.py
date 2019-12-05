@@ -38,7 +38,8 @@ def prepare_face_enhancer_data(target_dir, run_name):
     label_dir = os.path.join(target_dir, 'train', 'train_label')
 
     print('Prepare test_real....')
-    for img_idx in tqdm(range(len(os.listdir(train_dir)))):
+    for img_file in tqdm(sorted(os.listdir(train_dir))):
+        img_idx = int(img_file.split('.')[0])
         img = cv2.imread(os.path.join(train_dir, '{:05}.png'.format(img_idx)))
         label = cv2.imread(os.path.join(label_dir, '{:05}.png'.format(img_idx)))
         cv2.imwrite(os.path.join(test_real_dir, '{:05}.png'.format(img_idx)), img)
@@ -77,9 +78,10 @@ def prepare_face_enhancer_data(target_dir, run_name):
     torch.cuda.empty_cache()
 
     print(f'Copy the synthesized images in {test_sync_dir}...')
-    synthesized_image_dir = os.path.join(dir_name, '../../results', run_name, 'test_latest/images/')
+    synthesized_image_dir = os.path.join(dir_name, '../../face_enhancer_results', run_name, 'test_latest/images/')
     img_list = [f for f in os.listdir(synthesized_image_dir) if f.endswith('synthesized_image.jpg')]
-    for img_idx in tqdm(range(len(img_list))):
+    for img_file in tqdm(sorted(img_list)):
+        img_idx = int(img_file.split('_')[0])
         img = cv2.imread(os.path.join(synthesized_image_dir, '{:05}_synthesized_image.jpg'.format(img_idx)))
         cv2.imwrite(os.path.join(test_sync_dir, '{:05}.png'.format(img_idx)), img)
 

@@ -27,7 +27,7 @@ python src/data_preprocessing/preare_target.py -s data/targets/{target_folder_na
 
 3) Train the pose2vid model by running:
 ```bash
-python src/GANcing/train_pose2vid -t data/targets/{targt_folder_name} -r {run_name}
+python src/GANcing/train_pose2vid -t data/targets/{target_folder_name} -r {run_name}
 ```
 The training can be monitored:
 * Using Tensorboard by running `tensorboard --logdir ./checkpoints`
@@ -69,7 +69,7 @@ python src/face_enhancer/train_face_enhancer -t data/targets/{target_folder_name
 ```bash
 python src/face_enhancer/run_face_enhancer.py -s data/sources/{source_folder_name} -t data/targets/{target_folder_name} -r {run_name}
 ```
-This will create a new results folder in `./results/{run_name}_enhanced`, which you can use as a substitue in `make_gif`
+This will create a new results folder in `./results/{run_name}_enhanced`, which you can use as a substitue in `make_gif.py`
 
 ## Citations
 

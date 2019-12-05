@@ -64,7 +64,7 @@ def extract_poses(model, save_dir):
     pose_cords = []
     for idx in tqdm(range(len(os.listdir(img_dir)))):
         img_path = os.path.join(img_dir, '{:05}.png'.format(idx))
-        img = cv2.imread(str(img_path))
+        img = cv2.imread(img_path)
 
         shape_dst = np.min(img.shape[:2])
         oh = (img.shape[0] - shape_dst) // 2
@@ -91,14 +91,19 @@ def extract_poses(model, save_dir):
                 print("skipping 1st frame as pose detection failed")
                 continue
 
-        pose_cords.append(head_cord)
         head = img[int(head_cord[1] - crop_size): int(head_cord[1] + crop_size),
                    int(head_cord[0] - crop_size): int(head_cord[0] + crop_size), :]
-        plt.imshow(head)
-        plt.savefig(os.path.join(train_head_dir, 'pose_{}.jpg'.format(idx)))
-        plt.clf()
-        cv2.imwrite(os.path.join(train_img_dir, '{:05}.png'.format(idx)), img)
-        cv2.imwrite(os.path.join(train_label_dir, '{:05}.png'.format(idx)), label)
+        try:           
+            plt.imshow(head)
+            plt.savefig(os.path.join(train_head_dir, 'pose_{}.jpg'.format(idx)))
+            plt.clf()
+            cv2.imwrite(os.path.join(train_img_dir, '{:05}.png'.format(idx)), img)
+            cv2.imwrite(os.path.join(train_label_dir, '{:05}.png'.format(idx)), label)
+        except Exception as e:
+            print(e)
+            continue
+
+        pose_cords.append(head_cord)
 
     pose_cords_arr = np.array(pose_cords, dtype=np.int)
     np.save(os.path.join(save_dir, 'pose_source.npy'), pose_cords_arr)
