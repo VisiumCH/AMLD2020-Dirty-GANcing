@@ -49,7 +49,7 @@ def torch2numpy(tensor):
 def test_face_enhancer(target_dir, source_dir, run_name):
     torch.backends.cudnn.benchmark = True
     checkpoints_dir = os.path.join(dir_name, '../../checkpoints')
-    dataset_dir = os.path.join(target_dir, 'face')   # save test_sync in this folder
+    dataset_dir = os.path.join(target_dir, 'face_transfer')   # save test_sync in this folder
     pose_name = os.path.join(source_dir, 'pose_source_norm.npy') # coordinate save every heads
     ckpt_dir = os.path.join(checkpoints_dir, run_name, 'face')
     result_dir = os.path.join(dir_name, '../../results')

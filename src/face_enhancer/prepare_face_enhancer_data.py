@@ -34,6 +34,13 @@ def prepare_face_enhancer_data(target_dir, run_name):
     test_label = os.path.join(target_dir, 'test_label')
     os.makedirs(test_label, exist_ok=True)
 
+    transfer_face_sync_dir = os.path.join(target_dir, 'face_transfer')
+    os.makedirs(transfer_face_sync_dir, exist_ok=True)
+    transfer_test_sync_dir = os.path.join(transfer_face_sync_dir, 'test_sync')
+    os.makedirs(transfer_test_sync_dir, exist_ok=True)
+    transfer_test_real_dir = os.path.join(transfer_face_sync_dir, 'test_real')
+    os.makedirs(transfer_test_real_dir, exist_ok=True)
+
     train_dir = os.path.join(target_dir, 'train', 'train_img')
     label_dir = os.path.join(target_dir, 'train', 'train_label')
 
@@ -43,6 +50,7 @@ def prepare_face_enhancer_data(target_dir, run_name):
         img = cv2.imread(os.path.join(train_dir, '{:05}.png'.format(img_idx)))
         label = cv2.imread(os.path.join(label_dir, '{:05}.png'.format(img_idx)))
         cv2.imwrite(os.path.join(test_real_dir, '{:05}.png'.format(img_idx)), img)
+        cv2.imwrite(os.path.join(transfer_test_real_dir, '{:05}.png'.format(img_idx)), img)
         cv2.imwrite(os.path.join(test_img, '{:05}.png'.format(img_idx)), img)
         cv2.imwrite(os.path.join(test_label, '{:05}.png'.format(img_idx)), label)
 
@@ -84,6 +92,14 @@ def prepare_face_enhancer_data(target_dir, run_name):
         img_idx = int(img_file.split('_')[0])
         img = cv2.imread(os.path.join(synthesized_image_dir, '{:05}_synthesized_image.jpg'.format(img_idx)))
         cv2.imwrite(os.path.join(test_sync_dir, '{:05}.png'.format(img_idx)), img)
+
+    print('Copy transfer_test_sync')
+    previous_run_img_dir = os.path.join(dir_name, '../../results', run_name, 'test_latest/images/')
+    img_list = [f for f in os.listdir(previous_run_img_dir) if f.endswith('synthesized_image.jpg')]
+    for img_file in tqdm(sorted(img_list)):
+        img_idx = int(img_file.split('_')[0])
+        img = cv2.imread(os.path.join(previous_run_img_dir, '{:05}_synthesized_image.jpg'.format(img_idx)))
+        cv2.imwrite(os.path.join(transfer_test_sync_dir, '{:05}.png'.format(img_idx)), img)
 
 
 if __name__ == '__main__':
