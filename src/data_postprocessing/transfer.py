@@ -18,7 +18,7 @@ from util import html
 from util.visualizer import Visualizer
 
 
-def test_transfer(source_dir, run_name):
+def test_transfer(source_dir, run_name, live_run_name=None):
     import src.config.test_opt as opt
 
     opt.name = run_name
@@ -28,13 +28,15 @@ def test_transfer(source_dir, run_name):
 
     data_loader = CreateDataLoader(opt)
     dataset = data_loader.load_data()
+
+    model = create_model(opt)
+
+    if live_run_name is not None:
+        opt.name = live_run_name
     visualizer = Visualizer(opt)
 
     web_dir = os.path.join(opt.results_dir, opt.name, '%s_%s' % (opt.phase, opt.which_epoch))
     webpage = html.HTML(web_dir, 'Experiment = %s, Phase = %s, Epoch = %s' % (opt.name, opt.phase, opt.which_epoch))
-
-    model = create_model(opt)
-
     for data in tqdm(dataset):
         generated = model.inference(data['label'], data['inst'])
 
