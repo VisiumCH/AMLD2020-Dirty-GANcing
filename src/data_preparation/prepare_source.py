@@ -25,18 +25,19 @@ torch.backends.cudnn.benchmark = True
 torch.cuda.set_device(0)
 
 
-def prepare_source(save_dir):
+def prepare_source(save_dir, frames=False):
 
-    video_files = [f for f in os.listdir(save_dir) if f.endswith('.mp4')]
-    assert (not len(video_files) < 1), "No mp4 file found!"
-    assert (not len(video_files) > 1), "More than one video file found, make sure to have only one!"
+    if not frames:
+        video_files = [f for f in os.listdir(save_dir) if f.endswith('.mp4')]
+        assert (not len(video_files) < 1), "No mp4 file found!"
+        assert (not len(video_files) > 1), "More than one video file found, make sure to have only one!"
 
-    video_file = os.path.join(save_dir, video_files[0])
+        video_file = os.path.join(save_dir, video_files[0])
 
-    img_dir = os.path.join(save_dir, 'images')
-    os.makedirs(img_dir, exist_ok=True)
+        img_dir = os.path.join(save_dir, 'images')
+        os.makedirs(img_dir, exist_ok=True)
 
-    extract_frames(video_file, img_dir)
+        extract_frames(video_file, img_dir)
 
     model = load_openpose_model()
 
@@ -56,7 +57,7 @@ def extract_frames(video_file, img_dir, max_frames=1000):
         i += 1
 
 
-def load_openpose_model(weights='./src/PoseEstimation/network/weight/pose_model.pth',
+def load_openpose_model(weights=os.path.join(dir_name, '../PoseEstimation/network/weight/pose_model.pth'),
                         model_type='vgg19'):
 
     model = get_model(model_type)
