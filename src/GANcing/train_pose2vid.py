@@ -26,10 +26,10 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 torch.backends.cudnn.benchmark = True
 
 
-def train_pose2vid(target_dir, run_name):
+def train_pose2vid(target_dir, run_name, temporal_smoothing=False):
     import src.config.train_opt as opt
 
-    opt = update_opt(opt, target_dir, run_name)
+    opt = update_opt(opt, target_dir, run_name, temporal_smoothing)
 
     iter_path = os.path.join(opt.checkpoints_dir, opt.name, 'iter.json')
     data_loader = CreateDataLoader(opt)
@@ -67,8 +67,13 @@ def train_pose2vid(target_dir, run_name):
             save_fake = total_steps % opt.display_freq == display_delta
 
             ############## Forward Pass ######################
-            losses, generated = model(Variable(data['label']), Variable(data['inst']),
-                                      Variable(data['image']), Variable(data['feat']), infer=save_fake)
+            if temporal_smoothing:
+                losses, generated = model(Variable(data['label']), Variable(data['inst']),
+                                          Variable(data['image']), Variable(data['feat']),
+                                          Variable(data['previous_label']), Variable(data['previous_image']), infer=save_fake)
+            else:
+                losses, generated = model(Variable(data['label']), Variable(data['inst']),
+                                        Variable(data['image']), Variable(data['feat']), infer=save_fake)
 
             # sum per device losses
             losses = [torch.mean(x) if not isinstance(x, int) else x for x in losses]
@@ -149,12 +154,15 @@ def train_pose2vid(target_dir, run_name):
     torch.cuda.empty_cache()
 
 
-def update_opt(opt, target_dir, run_name):
+def update_opt(opt, target_dir, run_name, temporal_smoothing):
     opt.dataroot = os.path.join(target_dir, 'train')
     opt.name = run_name
     if os.path.isdir(os.path.join(dir_name, "../../checkpoints", run_name)):
         print("Run already exists, will try to resume training")
         opt.load_pretrain = os.path.join(dir_name, "../../checkpoints", run_name)
+
+    if temporal_smoothing:
+        opt.temporal_smoothing = temporal_smoothing
 
     return opt
 
@@ -167,5 +175,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--run-name', type=str,
                         default='bruno_mars_example',
                         help='Name of the current run')
+    parser.add_argument('-ts', '--temporal-smoothing', action='store_true',
+                        help='Whether to use temporal smoothing or not')            
     args = parser.parse_args()
-    train_pose2vid(args.target_dir, args.run_name)
+    train_pose2vid(args.target_dir, args.run_name, args.temporal_smoothing)

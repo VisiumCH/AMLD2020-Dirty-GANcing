@@ -4,8 +4,12 @@ from data.base_data_loader import BaseDataLoader
 
 def CreateDataset(opt):
     dataset = None
-    from data.aligned_dataset import AlignedDataset
-    dataset = AlignedDataset()
+    if not opt.temporal_smoothing:
+        from data.aligned_dataset import AlignedDataset
+        dataset = AlignedDataset()
+    else:
+        from data.aligned_dataset import TemporalSmoothingDataset
+        dataset = TemporalSmoothingDataset()
 
     print("dataset [%s] was created" % (dataset.name()))
     dataset.initialize(opt)

@@ -2,13 +2,20 @@
 ### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 import torch
 
+
 def create_model(opt):
     if opt.model == 'pix2pixHD':
-        from .pix2pixHD_model import Pix2PixHDModel, InferenceModel
+        from .pix2pixHD_model import Pix2PixHDModel, InferenceModel, GANcing, InferenceModelGANcing
         if opt.isTrain:
-            model = Pix2PixHDModel()
+            if opt.temporal_smoothing:
+                model = GANcing()
+            else:
+                model = Pix2PixHDModel()
         else:
-            model = InferenceModel()
+            if opt.temporal_smoothing:
+                model = InferenceModelGANcing()
+            else:
+                model = InferenceModel()
     else:
         from .ui_model import UIModel
         model = UIModel()

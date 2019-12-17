@@ -18,11 +18,12 @@ from util import html
 from util.visualizer import Visualizer
 
 
-def test_transfer(source_dir, run_name, live_run_name=None):
+def test_transfer(source_dir, run_name, temporal_smoothing=False, live_run_name=None):
     import src.config.test_opt as opt
 
     opt.name = run_name
     opt.dataroot = source_dir
+    opt.temporal_smoothing = temporal_smoothing
 
     os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
@@ -37,8 +38,18 @@ def test_transfer(source_dir, run_name, live_run_name=None):
 
     web_dir = os.path.join(opt.results_dir, opt.name, '%s_%s' % (opt.phase, opt.which_epoch))
     webpage = html.HTML(web_dir, 'Experiment = %s, Phase = %s, Epoch = %s' % (opt.name, opt.phase, opt.which_epoch))
+    generated = None
     for data in tqdm(dataset):
-        generated = model.inference(data['label'], data['inst'])
+        if temporal_smoothing:
+            if generated is None:
+                previous_frame = torch.zeros((1, 3, opt.loadSize, opt.loadSize))
+            else:
+                previous_frame = generated
+
+            generated = model.inference(data['label'], data['inst'], previous_frame)
+
+        else:
+            generated = model.inference(data['label'], data['inst'])
 
         visuals = OrderedDict([('input_label', util.tensor2label(data['label'][0], opt.label_nc)),
                                ('synthesized_image', util.tensor2im(generated.data[0]))])
@@ -56,5 +67,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--run-name', type=str,
                         default='bruno_mars_example',
                         help='Path to the folder where the target video is saved. One video per folder!')
+    parser.add_argument('-ts', '--temporal-smoothing', action='store_true',
+                        help='Whether to use temporal smoothing or not')            
     args = parser.parse_args()
-    test_transfer(args.source_dir, args.run_name)
+    test_transfer(args.source_dir, args.run_name, args.temporal_smoothing)
