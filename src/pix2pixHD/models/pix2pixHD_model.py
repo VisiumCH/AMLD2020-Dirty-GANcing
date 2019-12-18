@@ -519,9 +519,7 @@ class GANcing(Pix2PixHDModel):
         # VGG feature matching loss
         loss_G_VGG = 0
         if not self.opt.no_vgg_loss:
-            print(self.criterionVGG(fake_image, real_image))
-            print(self.criterionVGG(previous_fake_image, previous_img.cuda()))
-            loss_G_VGG = (self.criterionVGG(fake_image, real_image) + self.criterionVGG(previous_fake_image, previous_img.cuda()))  * self.opt.lambda_feat
+            loss_G_VGG = (self.criterionVGG(fake_image, real_image) + self.criterionVGG(previous_fake_image, previous_real_img))  * self.opt.lambda_feat
 
         # Only return the fake_B image if necessary to save BW
         return [self.loss_filter(loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_D_real, loss_D_fake), None if not infer else fake_image]

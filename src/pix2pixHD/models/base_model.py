@@ -70,7 +70,8 @@ class BaseModel(torch.nn.Module):
                     network.load_state_dict(pretrained_dict)
                     if self.opt.verbose:
                         print('Pretrained network %s has excessive layers; Only loading layers that are used' % network_label)
-                except:
+                except e:
+                    print(e)
                     print('Pretrained network %s has fewer layers; The following are not initialized:' % network_label)
                     for k, v in pretrained_dict.items():                      
                         if v.size() == model_dict[k].size():
