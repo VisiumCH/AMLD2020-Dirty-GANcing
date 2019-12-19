@@ -102,11 +102,11 @@ class TemporalSmoothingDataset(AlignedDataset):
         A_previous = Image.open(A_previous_path)
         params = get_params(self.opt, A_previous.size)
         if self.opt.label_nc == 0:
-            transform_A_previous = get_transform(self.opt, params)
+            #transform_A_previous = get_transform(self.opt, params)
             A_tensor_previous = transform_A(A_previous.convert('RGB'))
         else:
-            transform_A_previous = get_transform(self.opt, params, method=Image.NEAREST,
-                                        normalize=False)
+            #transform_A_previous = get_transform(self.opt, params, method=Image.NEAREST,
+            #                            normalize=False)
             A_tensor_previous = transform_A(A_previous) * 255.0
 
         B_tensor_previous = B_tensor = inst_tensor = feat_tensor = 0
@@ -121,7 +121,7 @@ class TemporalSmoothingDataset(AlignedDataset):
         if self.opt.isTrain:
             B_previous_path = self.B_paths[index-1]
             B_previous = Image.open(B_previous_path).convert('RGB')
-            transform_B = get_transform(self.opt, params)
+            #transform_B = get_transform(self.opt, params)
             B_tensor_previous = transform_B(B_previous)
 
         ### if using instance maps

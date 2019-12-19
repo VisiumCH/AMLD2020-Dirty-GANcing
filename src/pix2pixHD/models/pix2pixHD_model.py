@@ -201,7 +201,6 @@ class Pix2PixHDModel(BaseModel):
     def inference(self, label, inst):
         # Encode Inputs        
         input_label, inst_map, _, _ = self.encode_input(Variable(label), Variable(inst), infer=True)
-
         # Fake Generation
         if self.use_features:       
             # sample clusters from precomputed features             
@@ -475,11 +474,11 @@ class GANcing(Pix2PixHDModel):
         # Fake Generation of previous img
         if self.use_features:
             if not self.opt.load_features:
-                feat_map = self.netE.forward(torch.zeros(previous_real_img.size), inst_map)
+                feat_map = self.netE.forward(torch.zeros(previous_real_img.size()), inst_map)
             previous_input_concat = torch.cat((previous_label_input, feat_map), dim=1)
         else:
             previous_input_concat = previous_label_input
-        previous_input_concat = torch.cat((previous_input_concat, previous_real_img), dim=1)
+        previous_input_concat = torch.cat((previous_input_concat, torch.zeros(previous_real_img.size()).cuda()), dim=1)
         # TODO----------------------#
         previous_fake_image = self.netG.forward(previous_input_concat.float())
 
