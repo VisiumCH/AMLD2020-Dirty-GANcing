@@ -41,10 +41,7 @@ def test_transfer(source_dir, run_name, temporal_smoothing=False, live_run_name=
     generated = None
     for data in tqdm(dataset):
         if temporal_smoothing:
-            if generated is None:
-                previous_frame = torch.zeros((1, 3, opt.loadSize, opt.loadSize))
-            else:
-                previous_frame = generated
+            previous_frame = torch.zeros((1, 3, opt.loadSize, opt.loadSize))
 
             generated = model.inference(data['label'], data['inst'], previous_frame)
 
