@@ -335,7 +335,7 @@ class GANcing(Pix2PixHDModel):
             netD_input_nc = input_nc + opt.output_nc
             if not opt.no_instance:
                 netD_input_nc += 1
-            netD_input_nc *= 2
+            #netD_input_nc *= 2
             self.netD = networks.define_D(netD_input_nc, opt.ndf, opt.n_layers_D, opt.norm, use_sigmoid, 
                                           opt.num_D, not opt.no_ganFeat_loss, gpu_ids=self.gpu_ids)
 
@@ -459,8 +459,8 @@ class GANcing(Pix2PixHDModel):
 
         return input_label, inst_map, real_image, feat_map, previous_img, previous_label
 
-    def discriminate(self, input_label, test_image, previous_label, previous_image, use_pool=False):
-        input_concat = torch.cat((input_label, test_image.detach(), previous_label, previous_image.detach()), dim=1)
+    def discriminate(self, previous_label, input_label, previous_image, test_image, use_pool=False):
+        input_concat = torch.cat((torch.cat((previous_label, input_label), dim=2), torch.cat((previous_image, test_image), dim=2)), dim=1)
         if use_pool:
             fake_query = self.fake_pool.query(input_concat)
             return self.netD.forward(fake_query)
@@ -492,17 +492,16 @@ class GANcing(Pix2PixHDModel):
         input_concat = torch.cat((input_concat, previous_fake_image), dim=1)
         # TODO----------------------#
         fake_image = self.netG.forward(input_concat.float())
-
         # Fake Detection and Loss
-        pred_fake_pool = self.discriminate(input_label, fake_image, previous_label_input, previous_fake_image, use_pool=True)
+        pred_fake_pool = self.discriminate(previous_label_input, input_label, previous_fake_image, fake_image, use_pool=True)
         loss_D_fake = self.criterionGAN(pred_fake_pool, False)
 
         # Real Detection and Loss
-        pred_real = self.discriminate(input_label, real_image, previous_label_input, previous_real_img)
+        pred_real = self.discriminate(previous_label_input, input_label, previous_real_img, real_image)
         loss_D_real = self.criterionGAN(pred_real, True)
 
         # GAN loss (Fake Passability Loss)
-        pred_fake = self.netD.forward(torch.cat((input_label, fake_image, previous_label_input, previous_fake_image), dim=1))
+        pred_fake = self.netD.forward(torch.cat((torch.cat((previous_label_input, input_label), dim=2), torch.cat((previous_fake_image, fake_image), dim=2)), dim=1))
         loss_G_GAN = self.criterionGAN(pred_fake, True)
 
         # GAN feature matching loss
@@ -518,7 +517,7 @@ class GANcing(Pix2PixHDModel):
         # VGG feature matching loss
         loss_G_VGG = 0
         if not self.opt.no_vgg_loss:
-            loss_G_VGG = (self.criterionVGG(fake_image, real_image) + self.criterionVGG(previous_fake_image, previous_real_img))  * self.opt.lambda_feat
+            loss_G_VGG = (self.criterionVGG(fake_image, real_image) + self.criterionVGG(previous_fake_image, previous_real_img))  * self.opt.lambda_vgg
 
         # Only return the fake_B image if necessary to save BW
         return [self.loss_filter(loss_G_GAN, loss_G_GAN_Feat, loss_G_VGG, loss_D_real, loss_D_fake), None if not infer else fake_image]

@@ -3,6 +3,7 @@
 import torch
 import torch.nn as nn
 import functools
+from torch.nn.utils import spectral_norm
 from torch.autograd import Variable
 import numpy as np
 
@@ -45,9 +46,9 @@ def define_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_blocks_glo
     netG.apply(weights_init)
     return netG
 
-def define_D(input_nc, ndf, n_layers_D, norm='instance', use_sigmoid=False, num_D=1, getIntermFeat=False, gpu_ids=[]):        
+def define_D(input_nc, ndf, n_layers_D, norm='instance', use_sigmoid=False, num_D=1, getIntermFeat=False, use_spectral_norm=False, gpu_ids=[]):        
     norm_layer = get_norm_layer(norm_type=norm)   
-    netD = MultiscaleDiscriminator(input_nc, ndf, n_layers_D, norm_layer, use_sigmoid, num_D, getIntermFeat)   
+    netD = MultiscaleDiscriminator(input_nc, ndf, n_layers_D, norm_layer, use_sigmoid, num_D, getIntermFeat, use_spectral_norm)   
     print(netD)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())
@@ -294,14 +295,14 @@ class Encoder(nn.Module):
 
 class MultiscaleDiscriminator(nn.Module):
     def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, 
-                 use_sigmoid=False, num_D=3, getIntermFeat=False):
+                 use_sigmoid=False, num_D=3, getIntermFeat=False, use_spectral_norm=False):
         super(MultiscaleDiscriminator, self).__init__()
         self.num_D = num_D
         self.n_layers = n_layers
         self.getIntermFeat = getIntermFeat
      
         for i in range(num_D):
-            netD = NLayerDiscriminator(input_nc, ndf, n_layers, norm_layer, use_sigmoid, getIntermFeat)
+            netD = NLayerDiscriminator(input_nc, ndf, n_layers, norm_layer, use_sigmoid, getIntermFeat, use_spectral_norm)
             if getIntermFeat:                                
                 for j in range(n_layers+2):
                     setattr(self, 'scale'+str(i)+'_layer'+str(j), getattr(netD, 'model'+str(j)))                                   
@@ -335,33 +336,51 @@ class MultiscaleDiscriminator(nn.Module):
         
 # Defines the PatchGAN discriminator with the specified arguments.
 class NLayerDiscriminator(nn.Module):
-    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, use_sigmoid=False, getIntermFeat=False):
+    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, use_sigmoid=False, getIntermFeat=False, use_spectral_norm=False):
         super(NLayerDiscriminator, self).__init__()
         self.getIntermFeat = getIntermFeat
         self.n_layers = n_layers
 
         kw = 4
         padw = int(np.ceil((kw-1.0)/2))
-        sequence = [[nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw), nn.LeakyReLU(0.2, True)]]
+        if use_spectral_norm:
+            sequence = [[spectral_norm(nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw)), nn.LeakyReLU(0.2, True)]]
+        else:
+            sequence = [[nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw), nn.LeakyReLU(0.2, True)]]
 
         nf = ndf
         for n in range(1, n_layers):
             nf_prev = nf
             nf = min(nf * 2, 512)
-            sequence += [[
-                nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=2, padding=padw),
-                norm_layer(nf), nn.LeakyReLU(0.2, True)
-            ]]
+            if use_spectral_norm:
+                sequence += [[
+                    spectral_norm(nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=2, padding=padw)),
+                    norm_layer(nf), nn.LeakyReLU(0.2, True)
+                ]]
+            else:
+                sequence += [[
+                    nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=2, padding=padw),
+                    norm_layer(nf), nn.LeakyReLU(0.2, True)
+                ]]
 
         nf_prev = nf
         nf = min(nf * 2, 512)
-        sequence += [[
-            nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=1, padding=padw),
-            norm_layer(nf),
-            nn.LeakyReLU(0.2, True)
-        ]]
-
-        sequence += [[nn.Conv2d(nf, 1, kernel_size=kw, stride=1, padding=padw)]]
+        if use_spectral_norm:
+            sequence += [[
+                spectral_norm(nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=1, padding=padw)),
+                norm_layer(nf),
+                nn.LeakyReLU(0.2, True)
+            ]]
+        else:
+            sequence += [[
+                nn.Conv2d(nf_prev, nf, kernel_size=kw, stride=1, padding=padw),
+                norm_layer(nf),
+                nn.LeakyReLU(0.2, True)
+            ]]
+        if use_spectral_norm:
+            sequence += [[spectral_norm(nn.Conv2d(nf, 1, kernel_size=kw, stride=1, padding=padw))]]
+        else:
+            sequence += [[nn.Conv2d(nf, 1, kernel_size=kw, stride=1, padding=padw)]]
 
         if use_sigmoid:
             sequence += [[nn.Sigmoid()]]

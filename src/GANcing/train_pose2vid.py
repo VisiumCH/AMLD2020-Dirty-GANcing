@@ -86,7 +86,7 @@ def train_pose2vid(target_dir, run_name, temporal_smoothing=False):
             ############### Backward Pass ####################
             # update generator weights
             model.optimizer_G.zero_grad()
-            loss_G.backward()
+            loss_G.backward(retain_graph=True)
             model.optimizer_G.step()
 
             # update discriminator weights
@@ -161,8 +161,7 @@ def update_opt(opt, target_dir, run_name, temporal_smoothing):
         print("Run already exists, will try to resume training")
         opt.load_pretrain = os.path.join(dir_name, "../../checkpoints", run_name)
 
-    if temporal_smoothing:
-        opt.temporal_smoothing = temporal_smoothing
+    opt.temporal_smoothing = temporal_smoothing
 
     return opt
 
