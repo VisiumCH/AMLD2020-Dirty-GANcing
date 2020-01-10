@@ -7,6 +7,7 @@ import matplotlib
 import matplotlib.animation as ani
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
 from IPython.display import HTML
 from skimage import io
 
@@ -15,7 +16,7 @@ matplotlib.rcParams['animation.embed_limit'] = 2**128
 dir_name = os.path.dirname(__file__)
 
 
-def make_gif(source_dir, results_dir):
+def make_video(source_dir, results_dir):
 
     source_img_dir = Path(os.path.join(source_dir, 'test_img'))
     target_dir = Path(os.path.join(results_dir, 'test_latest/images'))
@@ -30,7 +31,7 @@ def make_gif(source_dir, results_dir):
     ax2 = fig.add_subplot(132)
     ax3 = fig.add_subplot(133)
 
-    def animate(nframe):
+    def render_figure(nframe):
         ax1.clear()
         ax2.clear()
         ax3.clear()
@@ -50,18 +51,30 @@ def make_gif(source_dir, results_dir):
         ax3.set_xticks([])
         ax3.set_yticks([])
 
-    anim = ani.FuncAnimation(fig, animate, frames=len(target_label_paths),
-                             interval=1000 / 24)
-    plt.close()
+    video_name = os.path.join(results_dir, "test_latest/output.mp4")
 
-    # js_anim = HTML(anim.to_jshtml())
+    for idx, _ in tqdm(enumerate(target_synth_paths)):
+        render_figure(idx)
+        fig.canvas.draw()
 
-    anim.save(os.path.join(results_dir, "test_latest/output.gif"),
-              writer="imagemagick")
+        if idx == 0:
+            width, height = fig.canvas.get_width_height()
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            video = cv2.VideoWriter(video_name, fourcc, 20.0, (width, height))
+
+        img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
+        img = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+        # img is rgb, convert to opencv's default bgr
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        video.write(img)
+
+    cv2.destroyAllWindows()
+    video.release()
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('Prepare target Gif')
+    parser = argparse.ArgumentParser('Prepare target Video')
     parser.add_argument('-s', '--source-dir', type=str,
                         default=os.path.join(dir_name, '../../data/sources/bruno_mars'),
                         help='Path to the folder where the source video is saved. One video per folder!')
@@ -69,4 +82,4 @@ if __name__ == '__main__':
                         default=os.path.join(dir_name, '../../results/example_bruno_mars'),
                         help='Path to the folder where the results of transfer.py are saved')
     args = parser.parse_args()
-    make_gif(args.source_dir, args.results_dir)
+    make_video(args.source_dir, args.results_dir)
