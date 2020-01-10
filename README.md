@@ -17,17 +17,17 @@ pip install -r requirements_2nd.txt
 1)  Put your source video (an `.mp4` file) in `./data/sources/{source_folder_name}/` 
 and then run:
 ```bash
-python src/data_preprocessing/preare_source.py -s data/sources/{source_folder_name}
+python src/data_preparation/prepare_source.py -s data/sources/{source_folder_name}
 ```
 2) Put your target video (an `.mp4` file) in `./data/targets/{target_folder_name}/` 
 and then run: 
 ```bash
-python src/data_preprocessing/preare_target.py -s data/targets/{target_folder_name}
+python src/data_preparation/prepare_target.py -s data/targets/{target_folder_name}
 ```
 
 3) Train the pose2vid model by running:
 ```bash
-python src/GANcing/train_pose2vid -t data/targets/{target_folder_name} -r {run_name}
+python src/GANcing/train_pose2vid.py -t data/targets/{target_folder_name} -r {run_name}
 ```
 The training can be monitored:
 * Using Tensorboard by running `tensorboard --logdir ./checkpoints`

@@ -6,7 +6,6 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 from torch.backends import cudnn
 from PIL import Image
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 image_transforms = transforms.Compose([
         Image.fromarray,
         transforms.ToTensor(),
@@ -15,9 +14,16 @@ image_transforms = transforms.Compose([
 
 dir_name = os.path.dirname(__file__)
 sys.path.append(dir_name)
+sys.path.append(os.path.join(dir_name, '../utils'))
+
 import model
 import dataset
 from trainer import Trainer
+from torch_utils import get_torch_device
+
+device = get_torch_device()
+if device != torch.device('cpu'):
+    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
 
 def load_models(directory, batch_num):

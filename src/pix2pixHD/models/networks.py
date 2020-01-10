@@ -41,7 +41,7 @@ def define_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_blocks_glo
         raise('generator not implemented!')
     print(netG)
     if len(gpu_ids) > 0:
-        assert(torch.cuda.is_available())   
+        assert(torch.cuda.is_available())
         netG.cuda(gpu_ids[0])
     netG.apply(weights_init)
     return netG
@@ -70,8 +70,12 @@ def print_network(net):
 ##############################################################################
 class GANLoss(nn.Module):
     def __init__(self, use_lsgan=True, target_real_label=1.0, target_fake_label=0.0,
-                 tensor=torch.FloatTensor):
+                 tensor=torch.FloatTensor, gpu_ids=[]):
         super(GANLoss, self).__init__()
+        if len(gpu_ids) > 0:
+            self.device = torch.device('cuda')
+        else:
+            self.device = torch.device('cpu')
         self.real_label = target_real_label
         self.fake_label = target_fake_label
         self.real_label_var = None
@@ -104,8 +108,8 @@ class GANLoss(nn.Module):
         if isinstance(input[0], list):
             loss = 0
             for input_i in input:
-                pred = input_i[-1].cuda()
-                target_tensor = self.get_target_tensor(pred, target_is_real).cuda()
+                pred = input_i[-1].to(self.device)
+                target_tensor = self.get_target_tensor(pred, target_is_real).to(self.device)
                 ##把加cuda()##
                 loss += self.loss(pred, target_tensor)
             return loss
@@ -115,16 +119,19 @@ class GANLoss(nn.Module):
 
 class VGGLoss(nn.Module):
     def __init__(self, gpu_ids):
-        super(VGGLoss, self).__init__()        
-        self.vgg = Vgg19().cuda()
+        super(VGGLoss, self).__init__()
+        if len(gpu_ids) > 0:
+            self.vgg = Vgg19().cuda()
+        else:
+            self.vgg = Vgg19()
         self.criterion = nn.L1Loss()
-        self.weights = [1.0/32, 1.0/16, 1.0/8, 1.0/4, 1.0]        
+        self.weights = [1.0/32, 1.0/16, 1.0/8, 1.0/4, 1.0]
 
-    def forward(self, x, y):              
+    def forward(self, x, y):
         x_vgg, y_vgg = self.vgg(x), self.vgg(y)
         loss = 0
         for i in range(len(x_vgg)):
-            loss += self.weights[i] * self.criterion(x_vgg[i], y_vgg[i].detach())        
+            loss += self.weights[i] * self.criterion(x_vgg[i], y_vgg[i].detach())
         return loss
 
 ##############################################################################

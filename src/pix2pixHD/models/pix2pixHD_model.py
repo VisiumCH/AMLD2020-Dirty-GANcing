@@ -29,6 +29,10 @@ class Pix2PixHDModel(BaseModel):
 
         ######extra add
         self.gpu_ids = opt.gpu_ids
+        if len(self.gpu_ids) > 0:
+            self.device = torch.device('cuda')
+        else:
+            self.device = torch.device('cpu')
         ####################
         input_nc = opt.label_nc if opt.label_nc != 0 else opt.input_nc
 
@@ -78,7 +82,7 @@ class Pix2PixHDModel(BaseModel):
             # define loss functions
             self.loss_filter = self.init_loss_filter(not opt.no_ganFeat_loss, not opt.no_vgg_loss)
             
-            self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)   
+            self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor, gpu_ids=opt.gpu_ids)   
             self.criterionFeat = torch.nn.L1Loss()
             if not opt.no_vgg_loss:             
                 self.criterionVGG = networks.VGGLoss(self.gpu_ids)
@@ -117,32 +121,32 @@ class Pix2PixHDModel(BaseModel):
 
     def encode_input(self, label_map, inst_map=None, real_image=None, feat_map=None, infer=False):             
         if self.opt.label_nc == 0:
-            input_label = label_map.data.cuda()
+            input_label = label_map.data.to(self.device)
         else:
             # create one-hot vector for label map 
             size = label_map.size()
             oneHot_size = (size[0], self.opt.label_nc, size[2], size[3])
-            input_label = torch.cuda.FloatTensor(torch.Size(oneHot_size)).zero_()
-            input_label = input_label.scatter_(1, label_map.data.long().cuda(), 1.0)
+            input_label = torch.FloatTensor(torch.Size(oneHot_size)).zero_().to(self.device)
+            input_label = input_label.scatter_(1, label_map.data.long().to(self.device), 1.0)
             if self.opt.data_type == 16:
                 input_label = input_label.half()
 
         # get edges from instance map
         if not self.opt.no_instance:
-            inst_map = inst_map.data.cuda()
+            inst_map = inst_map.data.to(self.device)
             edge_map = self.get_edges(inst_map)
             input_label = torch.cat((input_label, edge_map), dim=1) 
         input_label = Variable(input_label, volatile=infer)
 
         # real images for training
         if real_image is not None:
-            real_image = Variable(real_image.data.cuda())
+            real_image = Variable(real_image.data.to(self.device))
 
         # instance map for feature encoding
         if self.use_features:
             # get precomputed feature maps
             if self.opt.load_features:
-                feat_map = Variable(feat_map.data.cuda())
+                feat_map = Variable(feat_map.data.to(self.device))
 
         return input_label, inst_map, real_image, feat_map
 
@@ -237,11 +241,11 @@ class Pix2PixHDModel(BaseModel):
         return feat_map
 
     def encode_features(self, image, inst):
-        image = Variable(image.cuda(), volatile=True)
+        image = Variable(image.to(self.device), volatile=True)
         feat_num = self.opt.feat_num
         h, w = inst.size()[2], inst.size()[3]
         block_num = 32
-        feat_map = self.netE.forward(image, inst.cuda())
+        feat_map = self.netE.forward(image, inst.to(self.device))
         inst_np = inst.cpu().numpy().astype(int)
         feature = {}
         for i in range(self.opt.label_nc):
@@ -259,7 +263,7 @@ class Pix2PixHDModel(BaseModel):
         return feature
 
     def get_edges(self, t):
-        edge = torch.cuda.ByteTensor(t.size()).zero_()
+        edge = torch.ByteTensor(t.size()).zero_().to(self.device)
         edge[:,:,:,1:] = edge[:,:,:,1:] | (t[:,:,:,1:] != t[:,:,:,:-1])
         edge[:,:,:,:-1] = edge[:,:,:,:-1] | (t[:,:,:,1:] != t[:,:,:,:-1])
         edge[:,:,1:,:] = edge[:,:,1:,:] | (t[:,:,1:,:] != t[:,:,:-1,:])
@@ -313,6 +317,10 @@ class GANcing(Pix2PixHDModel):
 
         ######extra add
         self.gpu_ids = opt.gpu_ids
+        if len(self.gpu_ids) > 0:
+            self.device = torch.device('cuda')
+        else:
+            self.device = torch.device('cpu')
         ####################
         input_nc = opt.label_nc if opt.label_nc != 0 else opt.input_nc
 
@@ -365,7 +373,7 @@ class GANcing(Pix2PixHDModel):
             # define loss functions
             self.loss_filter = self.init_loss_filter(not opt.no_ganFeat_loss, not opt.no_vgg_loss)
             
-            self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)   
+            self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor, gpu_ids=opt.gpu_ids)   
             self.criterionFeat = torch.nn.L1Loss()
             if not opt.no_vgg_loss:             
                 self.criterionVGG = networks.VGGLoss(self.gpu_ids)
@@ -404,38 +412,38 @@ class GANcing(Pix2PixHDModel):
 
     def encode_input(self, label_map, inst_map=None, real_image=None, feat_map=None, previous_img=None, previous_label_map=None, infer=False):             
         if self.opt.label_nc == 0:
-            input_label = label_map.data.cuda()
+            input_label = label_map.data.to(self.device)
         else:
             # create one-hot vector for label map 
             size = label_map.size()
             oneHot_size = (size[0], self.opt.label_nc, size[2], size[3])
-            input_label = torch.cuda.FloatTensor(torch.Size(oneHot_size)).zero_()
-            input_label = input_label.scatter_(1, label_map.data.long().cuda(), 1.0)
+            input_label = torch.FloatTensor(torch.Size(oneHot_size)).zero_().to(self.device)
+            input_label = input_label.scatter_(1, label_map.data.long().to(self.device), 1.0)
             if self.opt.data_type == 16:
                 input_label = input_label.half()
 
         # get edges from instance map
         if not self.opt.no_instance:
-            inst_map = inst_map.data.cuda()
+            inst_map = inst_map.data.to(self.device)
             edge_map = self.get_edges(inst_map)
             input_label = torch.cat((input_label, edge_map), dim=1) 
         input_label = Variable(input_label, volatile=infer)
 
         if not infer: # no previous label at inference
             if self.opt.label_nc == 0:
-                previous_label = previous_label_map.data.cuda()
+                previous_label = previous_label_map.data.to(self.device)
             else:
                 # create one-hot vector for label map 
                 size = previous_label_map.size()
                 oneHot_size = (size[0], self.opt.label_nc, size[2], size[3])
-                previous_label = torch.cuda.FloatTensor(torch.Size(oneHot_size)).zero_()
-                previous_label = previous_label.scatter_(1, previous_label_map.data.long().cuda(), 1.0)
+                previous_label = torch.FloatTensor(torch.Size(oneHot_size)).zero_().to(self.device)
+                previous_label = previous_label.scatter_(1, previous_label_map.data.long().to(self.device), 1.0)
                 if self.opt.data_type == 16:
                     previous_label = previous_label.half()
 
             # get edges from instance map
             if not self.opt.no_instance:
-                inst_map = inst_map.data.cuda()
+                inst_map = inst_map.data.to(self.device)
                 edge_map = self.get_edges(inst_map)
                 previous_label = torch.cat((previous_label, edge_map), dim=1) 
             previous_label = Variable(previous_label, volatile=infer)
@@ -446,16 +454,16 @@ class GANcing(Pix2PixHDModel):
 
         # real images for training
         if real_image is not None:
-            real_image = Variable(real_image.data.cuda())
+            real_image = Variable(real_image.data.to(self.device))
 
         if previous_img is not None:
-            previous_img = Variable(real_image.data.cuda())
+            previous_img = Variable(real_image.data.to(self.device))
 
         # instance map for feature encoding
         if self.use_features:
             # get precomputed feature maps
             if self.opt.load_features:
-                feat_map = Variable(feat_map.data.cuda())
+                feat_map = Variable(feat_map.data.to(self.device))
 
         return input_label, inst_map, real_image, feat_map, previous_img, previous_label
 
@@ -478,7 +486,7 @@ class GANcing(Pix2PixHDModel):
             previous_input_concat = torch.cat((previous_label_input, feat_map), dim=1)
         else:
             previous_input_concat = previous_label_input
-        previous_input_concat = torch.cat((previous_input_concat, torch.zeros(previous_real_img.size()).cuda()), dim=1)
+        previous_input_concat = torch.cat((previous_input_concat, torch.zeros(previous_real_img.size()).to(self.device)), dim=1)
         # TODO----------------------#
         previous_fake_image = self.netG.forward(previous_input_concat.float())
 

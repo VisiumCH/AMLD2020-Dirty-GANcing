@@ -14,16 +14,16 @@ dir_name = os.path.dirname(__file__)
 pix2pixhd_dir = os.path.join(dir_name, '../pix2pixHD/')
 sys.path.append(pix2pixhd_dir)
 sys.path.append(os.path.join(dir_name, '../..'))
+sys.path.append(os.path.join(dir_name, '../utils'))
 
 
 from data.data_loader import CreateDataLoader
 from models.models import create_model
 import util.util as util
 from util.visualizer import Visualizer
+from torch_utils import get_torch_device
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
-torch.multiprocessing.set_sharing_strategy('file_system')
-torch.backends.cudnn.benchmark = True
+device = get_torch_device()
 
 
 def train_pose2vid(target_dir, run_name, temporal_smoothing=False):
@@ -51,7 +51,7 @@ def train_pose2vid(target_dir, run_name, temporal_smoothing=False):
     save_delta = total_steps % opt.save_latest_freq
 
     model = create_model(opt)
-    model = model.cuda()
+    model = model.to(device)
     visualizer = Visualizer(opt)
 
     for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
@@ -160,6 +160,9 @@ def update_opt(opt, target_dir, run_name, temporal_smoothing):
     if os.path.isdir(os.path.join(dir_name, "../../checkpoints", run_name)):
         print("Run already exists, will try to resume training")
         opt.load_pretrain = os.path.join(dir_name, "../../checkpoints", run_name)
+
+    if device == torch.device('cpu'):
+        opt.gpu_ids = []
 
     opt.temporal_smoothing = temporal_smoothing
 

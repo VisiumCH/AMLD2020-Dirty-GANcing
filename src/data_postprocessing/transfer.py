@@ -10,12 +10,16 @@ dir_name = os.path.dirname(__file__)
 pix2pixhd_dir = os.path.join(dir_name, '../pix2pixHD/')
 sys.path.append(pix2pixhd_dir)
 sys.path.append(os.path.join(dir_name, '../..'))
+sys.path.append(os.path.join(dir_name, '../utils'))
 
 import util.util as util
 from data.data_loader import CreateDataLoader
 from models.models import create_model
 from util import html
 from util.visualizer import Visualizer
+from torch_utils import get_torch_device
+
+device = get_torch_device()
 
 
 def test_transfer(source_dir, run_name, temporal_smoothing=False, live_run_name=None):
@@ -24,8 +28,10 @@ def test_transfer(source_dir, run_name, temporal_smoothing=False, live_run_name=
     opt.name = run_name
     opt.dataroot = source_dir
     opt.temporal_smoothing = temporal_smoothing
-
-    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+    if device == torch.device('cpu'):
+        opt.gpu_ids = []
+    else:
+        os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
     data_loader = CreateDataLoader(opt)
     dataset = data_loader.load_data()

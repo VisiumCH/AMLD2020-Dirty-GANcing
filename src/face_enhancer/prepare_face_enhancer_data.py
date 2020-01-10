@@ -13,12 +13,16 @@ dir_name = os.path.dirname(__file__)
 pix2pixhd_dir = os.path.join(dir_name, '../pix2pixHD/')
 sys.path.append(pix2pixhd_dir)
 sys.path.append(os.path.join(dir_name, '../..'))
+sys.path.append(os.path.join(dir_name, '../utils'))
 
 import util.util as util
 from data.data_loader import CreateDataLoader
 from models.models import create_model
 from util import html
 from util.visualizer import Visualizer
+from torch_utils import get_torch_device
+
+device = get_torch_device()
 
 
 def prepare_face_enhancer_data(target_dir, run_name):
@@ -57,7 +61,11 @@ def prepare_face_enhancer_data(target_dir, run_name):
     print('Prepare test_sync....')
 
     import src.config.test_opt as opt
-    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+    if device == torch.device('cpu'):
+        opt.gpu_ids = []
+    else:
+        os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+
     opt.checkpoints_dir = os.path.join(dir_name, '../../checkpoints/')
     opt.dataroot = target_dir
     opt.name = run_name

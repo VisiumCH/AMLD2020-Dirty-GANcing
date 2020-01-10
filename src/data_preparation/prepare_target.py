@@ -21,11 +21,9 @@ from network.rtpose_vgg import get_model
 from evaluate.coco_eval import get_multiplier, get_outputs
 # Import from utils
 from openpose_utils import remove_noise, get_pose
+from torch_utils import get_torch_device
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
-torch.multiprocessing.set_sharing_strategy('file_system')
-torch.backends.cudnn.benchmark = True
-torch.cuda.set_device(0)
+device = get_torch_device()
 
 
 def prepare_target(save_dir):
@@ -74,7 +72,7 @@ def extract_poses(model, save_dir):
         img = cv2.resize(img, (512, 512))
         multiplier = get_multiplier(img)
         with torch.no_grad():
-            paf, heatmap = get_outputs(multiplier, img, model, 'rtpose')
+            paf, heatmap = get_outputs(multiplier, img, model, 'rtpose', device)
         r_heatmap = np.array([remove_noise(ht)
                               for ht in heatmap.transpose(2, 0, 1)[:-1]]).transpose(1, 2, 0)
         heatmap[:, :, :-1] = r_heatmap

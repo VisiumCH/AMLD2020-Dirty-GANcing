@@ -13,18 +13,22 @@ from imageio import get_writer
 
 dir_name = os.path.dirname(__file__)
 sys.path.append(dir_name)
+sys.path.append(os.path.join(dir_name, '../utils'))
+
 import model
 import dataset
 from trainer import Trainer
+from torch_utils import get_torch_device
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+device = get_torch_device()
+if device != torch.device('cpu'):
+    os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+
 image_transforms = transforms.Compose([
         Image.fromarray,
         transforms.ToTensor(),
         transforms.Normalize([.5, .5, .5], [.5, .5, .5]),
     ])
-
-device = torch.device('cuda')
 
 
 def load_models(directory):
