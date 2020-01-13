@@ -1,0 +1,18 @@
+from nvidia/cuda:10.1-cudnn7-runtime-ubuntu18.04
+
+RUN apt-get update && apt-get -q -y install --reinstall build-essential && \
+    apt-get -q -y install ffmpeg gcc python3 python3-pip
+
+COPY requirements_1st.txt /app/requirements_1st.txt
+COPY requirements_2nd.txt /app/requirements_2nd.txt
+
+RUN pip3 install --upgrade pip
+RUN pip3 install -r /app/requirements_1st.txt
+Run pip3 install -r /app/requirements_2nd.txt
+
+COPY . /app
+
+WORKDIR /app
+
+ENTRYPOINT ["/bin/bash"]
+#ENTRYPOINT ["jupyter", "notebook", "--no-browser", "--allow-root", "--ip=0.0.0.0", "--port=8888"]
