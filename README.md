@@ -1,8 +1,35 @@
 # Dirty-Gancing
 This repository contains the code and models for the Dirty GANcing Visium workshop at AMLD 2020.
 
+## Workshop setup
+
+Follow these steps if you wish to reproduce the exercises of the AMLD2020 Workshop
+
+### Build the Docker image 
+
+1) Install Docker:
+    * Windows 10, Mac OS, Linux: find your OS on <https://docs.docker.com/install/#supported-platforms>
+    * Windows <10: follow the instructions on <https://docs.docker.com/toolbox/toolbox_install_windows/> to install Docker Toolbox  
+2) Download this repository
+
+3) Open a terminal and move in the repository
+    * Windows 10, Mac OS, Linux: use your favorite terminal application
+    * Windows <10: use the Docker Quickstart Terminal installed with Docker Toolbox
+4) Build the Docker image: type `docker build -t visium_amld_gancing .` (this might take a while)
+
+    Note: If your computer has GPU capabilities and you need to install nvidia-docker. We also provide a separate Dockerfile that has GPU capabilities. For this workshop, running on the cpu will be fine though. 
+
+### Run the image
+5. Still from the repository, run the Docker image:
+    * Windows Command Line: type `docker run -it -p 8888:8888 -v "%cd%":/app visium_amld_gancing`
+    * Windows PowerShell / Mac OS / Linux: type `docker run -it -p 8888:8888 -v ${PWD}:/app visium_amld_gancing`
+6. The container will automatically start a Jupyter notebook server
+    * Mac OS, Linux: go to <http://localhost:8888>
+    * Windows: go to <http://192.168.99.100:8888>
+
+
 ## Requirements
-If you need to train the pose2vid network, it is best to have GPU capabilities. Most of the rest of the code could probably run on cpu.
+If you wish to run the code without using Docker, we advise to at least create a python virtual environment to install the dependencies.
 
 Create a virtual environnement and install the dependencies:
 ```bash
