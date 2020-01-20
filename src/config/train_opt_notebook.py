@@ -61,4 +61,4 @@ use_dropout=False
 use_spectral_norm=False
 verbose=False
 which_epoch='latest'
-gpu_ids=[]
+gpu_ids=[0]
