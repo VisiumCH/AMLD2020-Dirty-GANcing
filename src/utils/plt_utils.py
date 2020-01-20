@@ -34,4 +34,3 @@ def plot_current_results(visuals, fig, axes):
     ax3.set_xticks([])
     ax3.set_yticks([])
     fig.canvas.draw()
-    time.sleep(0.01)
