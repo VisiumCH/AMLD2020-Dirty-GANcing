@@ -16,7 +16,7 @@ matplotlib.rcParams['animation.embed_limit'] = 2**128
 dir_name = os.path.dirname(__file__)
 
 
-def make_video(source_dir, results_dir):
+def make_video(source_dir, results_dir, filename="output"):
 
     source_img_dir = Path(os.path.join(source_dir, 'test_img'))
     target_dir = Path(os.path.join(results_dir, 'test_latest/images'))
@@ -51,7 +51,7 @@ def make_video(source_dir, results_dir):
         ax3.set_xticks([])
         ax3.set_yticks([])
 
-    video_name = os.path.join(results_dir, "test_latest/output.mp4")
+    video_name = os.path.join(results_dir, "{}.mp4".format(filename))
 
     for idx, _ in tqdm(enumerate(target_synth_paths)):
         render_figure(idx)
@@ -60,6 +60,8 @@ def make_video(source_dir, results_dir):
         if idx == 0:
             width, height = fig.canvas.get_width_height()
             fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            fourcc = cv2.VideoWriter_fourcc(*'VP90')
+
             video = cv2.VideoWriter(video_name, fourcc, 20.0, (width, height))
 
         img = np.fromstring(fig.canvas.tostring_rgb(), dtype=np.uint8, sep='')
