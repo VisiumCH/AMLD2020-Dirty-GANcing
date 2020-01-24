@@ -33,9 +33,13 @@ def test_transfer(source_dir, run_name, temporal_smoothing=False, live_run_name=
     else:
         os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
+    opt.checkpoints_dir = os.path.join(dir_name, '../../checkpoints')
+    opt.results_dir = os.path.join(dir_name, '../../results')
+
     data_loader = CreateDataLoader(opt)
     dataset = data_loader.load_data()
 
+    #print(opt.load_pretrain)
     model = create_model(opt)
 
     if live_run_name is not None:
