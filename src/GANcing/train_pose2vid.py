@@ -86,7 +86,7 @@ def train_pose2vid(target_dir, run_name, temporal_smoothing=False):
             ############### Backward Pass ####################
             # update generator weights
             model.optimizer_G.zero_grad()
-            loss_G.backward(retain_graph=True)
+            loss_G.backward()
             model.optimizer_G.step()
 
             # update discriminator weights
