@@ -3,33 +3,19 @@ This repository contains the code and models for the Dirty GANcing Visium worksh
 
 ## Workshop setup
 
-Follow these steps if you wish to reproduce the exercises of the AMLD2020 Workshop
+Running the code of this repository is, for the most part, computionally expensive and it is best to have GPU access. For the workshop users, we have prepared the notebook so that you can easily load them into Google Colab and enjoy the **free GPU services** offered by Google.
 
-### Build the Docker image 
+1) Open [Google Colab](https://colab.research.google.com/) and sign in with your Google account or create a new one.
 
-1) Install Docker:
-    * Windows 10, Mac OS, Linux: find your OS on <https://docs.docker.com/install/#supported-platforms>
-    * Windows <10: follow the instructions on <https://docs.docker.com/toolbox/toolbox_install_windows/> to install Docker Toolbox  
-2) Download this repository
+2) Click on `File` and then `Open notebook...`. Select the **Github** tab and type in look for **VisiumCH** to find this repository and select the notebook you would like to run.
 
-3) Open a terminal and move in the repository
-    * Windows 10, Mac OS, Linux: use your favorite terminal application
-    * Windows <10: use the Docker Quickstart Terminal installed with Docker Toolbox
-4) Build the Docker image: type `docker build -t visium_amld_gancing .` (this might take a while)
+3) Once you are in the notebook, click on **Runtime**, **Change runtime type** and then select **GPU** as hardware accelerator.
 
-    Note: If your computer has GPU capabilities and you need to install nvidia-docker. We also provide a separate Dockerfile that has GPU capabilities. For this workshop, running on the cpu will be fine though. 
-
-### Run the image
-5. Still from the repository, run the Docker image:
-    * Windows Command Line: type `docker run -it -p 8888:8888 -v "%cd%":/app visium_amld_gancing`
-    * Windows PowerShell / Mac OS / Linux: type `docker run -it -p 8888:8888 -v ${PWD}:/app visium_amld_gancing`
-6. The container will automatically start a Jupyter notebook server
-    * Mac OS, Linux: go to <http://localhost:8888>
-    * Windows: go to <http://192.168.99.100:8888>
+4) Finally, click on **Connect** and you should be ready!
 
 
 ## Requirements
-If you wish to run the code without using Docker, we advise to at least create a python virtual environment to install the dependencies.
+For users outside the workshopwho would like to experiment more with the repo, here are a few installation steps:
 
 Create a virtual environnement and install the dependencies:
 ```bash
