@@ -52,14 +52,14 @@ class Pose:
             global_kpt_a_id = self.keypoints[kpt_a_id, 0]
             if global_kpt_a_id != -1:
                 x_a, y_a = self.keypoints[kpt_a_id]
-                cv2.circle(img, (int(x_a), int(y_a)), 3, Pose.color, -1)
+                cv2.circle(img, (int(x_a), int(y_a)), 3, color, -1)
             kpt_b_id = BODY_PARTS_KPT_IDS[part_id][1]
             global_kpt_b_id = self.keypoints[kpt_b_id, 0]
             if global_kpt_b_id != -1:
                 x_b, y_b = self.keypoints[kpt_b_id]
-                cv2.circle(img, (int(x_b), int(y_b)), 3, Pose.color, -1)
+                cv2.circle(img, (int(x_b), int(y_b)), 3, color, -1)
             if global_kpt_a_id != -1 and global_kpt_b_id != -1:
-                cv2.line(img, (int(x_a), int(y_a)), (int(x_b), int(y_b)), Pose.color, 2)
+                cv2.line(img, (int(x_a), int(y_a)), (int(x_b), int(y_b)), color, 2)
 
 
 def get_similarity(a, b, threshold=0.5):
