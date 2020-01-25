@@ -8,9 +8,9 @@ def init_figure():
     ax1 = fig.add_subplot(131)
     ax2 = fig.add_subplot(132)
     ax3 = fig.add_subplot(133)
-    plt.ion()
+    #plt.ion()
 
-    fig.show()
+    #fig.show()
     return fig, (ax1, ax2, ax3)
 
 
@@ -33,4 +33,5 @@ def plot_current_results(visuals, fig, axes):
     ax3.imshow(visuals['synthesized_image'])
     ax3.set_xticks([])
     ax3.set_yticks([])
-    fig.canvas.draw()
+    #fig.canvas.draw()
+    plt.show()
