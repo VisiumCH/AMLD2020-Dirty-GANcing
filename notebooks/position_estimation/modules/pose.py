@@ -44,7 +44,7 @@ class Pose:
             self.id = Pose.last_id + 1
             Pose.last_id += 1
 
-    def draw(self, img):
+    def draw(self, img, color):
         assert self.keypoints.shape == (Pose.num_kpts, 2)
 
         for part_id in range(len(BODY_PARTS_PAF_IDS) - 2):
