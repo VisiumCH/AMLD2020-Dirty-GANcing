@@ -468,7 +468,7 @@ class GANcing(Pix2PixHDModel):
         return input_label, inst_map, real_image, feat_map, previous_img, previous_label
 
     def discriminate(self, previous_label, input_label, previous_image, test_image, use_pool=False):
-        input_concat = torch.cat((torch.cat((previous_label, input_label), dim=2), torch.cat((previous_image, test_image), dim=2)), dim=1)
+        input_concat = torch.cat((torch.cat((previous_label, input_label), dim=2), torch.cat((previous_image.detach(), test_image.detach()), dim=2)), dim=1)
         if use_pool:
             fake_query = self.fake_pool.query(input_concat)
             return self.netD.forward(fake_query)
