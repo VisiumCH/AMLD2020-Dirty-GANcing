@@ -15,7 +15,7 @@ Running the code of this repository is, for the most part, computionally expensi
 
 
 ## Requirements
-For users outside the workshopwho would like to experiment more with the repo, here are a few installation steps:
+For users outside the workshop who would like to experiment more with the repo, here are a few installation steps:
 
 Create a virtual environnement and install the dependencies:
 ```bash
@@ -97,7 +97,7 @@ This repo is an adaptation of the paper [Everybody Dance Now](https://arxiv.org/
 }
 ```
 
-The code in this repo is an adapted and corrected for the AMLD workshop, and is orginally based on [CUHKSZ-TQL's repo](https://github.com/CUHKSZ-TQL/EverybodyDanceNow_reproduce_pytorch). 
+The code in this repo is adapted and corrected for the AMLD workshop, and is orginally based on [CUHKSZ-TQL's repo](https://github.com/CUHKSZ-TQL/EverybodyDanceNow_reproduce_pytorch). 
 
 It also borrows heavily from :
 * [pix2pixHD](https://github.com/NVIDIA/pix2pixHD) 
