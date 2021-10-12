@@ -1,7 +1,7 @@
 dominate==2.4.0
 Ipython==7.10.0
 jupyter==1.0.0
-opencv-python==4.1.2.30
+opencv-python==4.2.0.32
 pandas==0.25.3
 Pillow==6.2.1
 pycocotools==2.0.0
