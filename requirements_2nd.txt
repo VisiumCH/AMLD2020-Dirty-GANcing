@@ -1,5 +1,5 @@
 dominate==2.4.0
-Ipython==7.10.0
+Ipython==8.10.0
 jupyter==1.0.0
 opencv-python==4.1.2.30
 pandas==0.25.3
